@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Heeko Ai</title>
+<style>
+:root{--black:#000;--glass:rgba(255,255,255,.04);--glass2:rgba(255,255,255,.08);--white:#fff;--mute:#8b9a9c;--aqua:#00e5d4;--aqua2:#7ff5ec;--line:rgba(0,229,212,.18);--ease:cubic-bezier(.22,.8,.24,1)}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--black);color:var(--white);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;overflow:hidden;display:flex;flex-direction:column}
+.aurora{position:fixed;inset:-20%;z-index:-1;pointer-events:none;filter:blur(60px);opacity:.5}
+.aurora span{position:absolute;border-radius:50%;background:radial-gradient(circle,var(--aqua),transparent 60%);width:45vmax;height:45vmax;animation:drift 22s var(--ease) infinite alternate}
+.aurora span:nth-child(1){top:0;left:0}
+.aurora span:nth-child(2){bottom:0;right:0;background:radial-gradient(circle,#ffffff33,transparent 60%);animation-duration:28s;animation-delay:-6s}
+.aurora span:nth-child(3){top:30%;left:35%;width:30vmax;height:30vmax;opacity:.35;animation-duration:19s;animation-delay:-11s}
+@keyframes drift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(12vw,8vh) scale(1.15)}100%{transform:translate(-6vw,14vh) scale(.95)}}
+
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);background:rgba(0,0,0,.6);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);animation:fadeDown .8s var(--ease) both;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:800;font-size:21px;color:#000;background:linear-gradient(135deg,var(--aqua),var(--white));animation:float 4s ease-in-out infinite,glow 3.2s ease-in-out infinite}
+.brand h1{font-size:17px;margin:0;font-weight:700;letter-spacing:.5px}
+.brand small{display:block;color:var(--mute);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;margin-top:2px}
+@keyframes float{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-4px) rotate(-3deg)}}
+@keyframes glow{0%,100%{box-shadow:0 0 0 1px rgba(255,255,255,.2),0 0 18px rgba(0,229,212,.35)}50%{box-shadow:0 0 0 1px rgba(255,255,255,.35),0 0 36px rgba(0,229,212,.7)}}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
+.bar{display:flex;gap:8px;flex-wrap:wrap}
+button,select{font:inherit}
+button{position:relative;overflow:hidden;cursor:pointer;font-weight:600;border-radius:12px;padding:9px 14px;border:1px solid transparent;transition:transform .25s var(--ease),box-shadow .25s var(--ease),background .25s,color .25s;color:#000;background:linear-gradient(135deg,var(--aqua),var(--aqua2))}
+button:hover{transform:translateY(-2px);box-shadow:0 10px 30px -8px rgba(0,229,212,.7)}
+button:active{transform:scale(.98)}
+button:disabled{opacity:.45;cursor:default;transform:none;box-shadow:none}
+button.ghost{background:transparent;color:var(--white);border-color:var(--line)}
+button.ghost:hover{background:var(--glass2);box-shadow:none;border-color:var(--aqua)}
+button.small{padding:5px 10px;font-size:12px;border-radius:9px}
+button.danger{background:transparent;color:#ff8a8a;border-color:#ff8a8a55}
+select{background:rgba(255,255,255,.04);color:var(--white);border:1px solid var(--line);border-radius:12px;padding:8px 10px;outline:none}
+select option{background:#000}
+
+#settings{margin:12px 16px 0;padding:0 16px;border-radius:18px;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;max-height:0;opacity:0;overflow:hidden;transition:max-height .6s var(--ease),opacity .4s,padding .5s var(--ease)}
+#settings.open{max-height:1400px;opacity:1;padding:16px}
+#settings h3{grid-column:1/-1;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--aqua2);margin:6px 0 0}
+label{font-size:12px;color:var(--mute);display:flex;flex-direction:column;gap:6px}
+label.check{flex-direction:row;align-items:center;gap:8px;color:var(--white)}
+input,textarea{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.12);color:var(--white);border-radius:12px;padding:10px 12px;font:inherit;outline:none;min-width:0;transition:border-color .3s,box-shadow .3s}
+input:focus,textarea:focus{border-color:var(--aqua);box-shadow:0 0 0 4px rgba(0,229,212,.15)}
+#settings .note{grid-column:1/-1;font-size:12px;color:var(--mute);line-height:1.6}
+
+#log{flex:1;overflow-y:auto;padding:18px 16px;display:flex;flex-direction:column;gap:14px;scroll-behavior:smooth}
+#log::-webkit-scrollbar{width:6px}#log::-webkit-scrollbar-thumb{background:rgba(0,229,212,.3);border-radius:6px}
+.msg,.card,.tool{animation:rise .6s var(--ease) both;max-width:880px}
+@keyframes rise{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+.msg{padding:12px 16px;border-radius:18px;line-height:1.6;white-space:pre-wrap;word-wrap:break-word;font-size:15px}
+.user{align-self:flex-end;background:linear-gradient(135deg,rgba(0,229,212,.2),rgba(255,255,255,.08));border:1px solid var(--line);border-bottom-right-radius:6px}
+.bot{align-self:flex-start;background:var(--glass);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom-left-radius:6px}
+.bot .row{display:flex;justify-content:flex-end;margin-top:8px}
+.bot.error{border-color:#ff8a8a66;color:#ffc2c2}
+.tool{align-self:flex-start;font-size:12px;color:var(--aqua2);font-family:ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-all;opacity:.85;padding:4px 10px;border-left:2px solid var(--aqua);max-width:95%}
+.card{align-self:flex-start;width:100%;background:var(--glass);border:1px solid var(--line);border-radius:18px;padding:14px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.card .cap{font-size:12px;color:var(--aqua2);margin:0 0 8px;letter-spacing:.5px;text-transform:uppercase}
+.card iframe{width:100%;height:460px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.card pre{max-height:460px;overflow:auto;background:#050505;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:12px;white-space:pre-wrap;word-break:break-word;color:#cfeeea}
+.card img{max-width:100%;border-radius:12px;display:block}
+.card audio{width:100%}
+.card .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.card a.dl{display:inline-block;color:#000;background:linear-gradient(135deg,var(--aqua),var(--aqua2));padding:7px 12px;border-radius:10px;text-decoration:none;font-weight:600;font-size:13px}
+.tabs{display:flex;gap:6px;margin-bottom:10px}
+.tabs button{background:transparent;color:var(--white);border:1px solid var(--line);box-shadow:none}
+.tabs button.on{background:linear-gradient(135deg,var(--aqua),var(--aqua2));color:#000}
+.typing{align-self:flex-start;display:flex;gap:6px;padding:14px 16px;background:var(--glass);border:1px solid rgba(255,255,255,.1);border-radius:18px}
+.typing i{width:8px;height:8px;border-radius:50%;background:var(--aqua);animation:bounce 1.2s infinite ease-in-out}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-7px);opacity:1}}
+#memory{margin:0 16px;padding:8px 14px;font-size:12px;color:var(--mute);border:1px solid var(--line);border-radius:12px;display:none}
+#memory.show{display:block}
+
+#composer{display:flex;gap:10px;padding:12px 16px 16px;border-top:1px solid var(--line);background:rgba(0,0,0,.6);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);align-items:flex-end}
+#input{flex:1;resize:none;height:56px;max-height:160px;border-radius:16px;padding:14px 16px}
+#send{min-width:96px;height:48px}
+#stop{display:none;min-width:96px;height:48px}
+#stop.show{display:inline-block}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:600px){.brand h1{font-size:16px}#send,#stop{min-width:80px}}
+</style>
+</head>
+<body>
+
+<div class="aurora"><span></span><span></span><span></span></div>
+
+<header>
+  <div class="brand">
+    <div class="logo">H</div>
+    <div><h1>Heeko Ai</h1><small>Nvidia · Nemotron 550B</small></div>
+  </div>
+  <div class="bar">
+    <select id="mode" title="What Heeko Ai builds">
+      <option value="website">Website</option>
+      <option value="app">Web app</option>
+    </select>
+    <button class="ghost" id="btn-retry">Retry</button>
+    <button class="ghost" id="btn-memory">Memory</button>
+    <button class="ghost" id="btn-export">Export</button>
+    <button class="ghost" id="btn-settings">Settings</button>
+    <button class="ghost" id="btn-clear">Clear</button>
+  </div>
+</header>
+
+<div id="settings">
+  <h3>Connection</h3>
+  <label>Nvidia API key (starts with nvapi-) <input id="k-nvidia" type="password" autocomplete="off"></label>
+  <label>Nvidia model ID <input id="m-nvidia" value="nvidia/nemotron-3-ultra-550b-a55b"></label>
+  <label>Chat endpoint <input id="endpoint" value="https://integrate.api.nvidia.com/v1/chat/completions"></label>
+  <label>Temperature (0 to 1) <input id="temp" type="number" min="0" max="1" step="0.1" value="0.7"></label>
+  <h3>Optional media endpoints (leave blank to turn off)</h3>
+  <label>Image endpoint (OpenAI-style /images/generations) <input id="img-endpoint" placeholder="https://..."></label>
+  <label>Image model ID <input id="img-model" placeholder="model ID"></label>
+  <label>Speech endpoint (OpenAI-style /audio/speech) <input id="tts-endpoint" placeholder="https://..."></label>
+  <label>Speech model ID <input id="tts-model" placeholder="model ID"></label>
+  <label class="check"><input id="confirm-paid" type="checkbox" checked> Ask before image and speech calls</label>
+  <div class="note">If you see "Load failed" or "Failed to fetch", host this file on a web address (for example app.netlify.com/drop) or point Chat endpoint at a proxy. Keys are only sent to the endpoints you set and are not saved when you close the page.</div>
+</div>
+
+<div id="log"></div>
+<div id="memory"></div>
+
+<div id="composer">
+  <textarea id="input" placeholder="Ask Heeko Ai anything. Ctrl/Cmd + Enter to send."></textarea>
+  <button id="send">Send</button>
+  <button id="stop" class="danger">Stop</button>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const MAX_STEPS = 8;
+const state = { msgs: [], memory: [], lastUser: "", abort: null };
+
+const BASE_SYSTEM = `You are Heeko Ai, a capable, honest assistant and builder. Plan before acting, use tools when they help,
+check your work before you finish, and say clearly when you are unsure. Do not claim knowledge beyond your training
+and say so when a question needs current information.
+Use make_website for websites and make_app for web apps. Use save_memory only for durable facts the user states
+about themselves or their projects. Use make_image and make_speech only when asked. Never invent facts about the user.`;
+
+const BUILD_SYSTEM = `Return ONLY one complete, self-contained HTML file with inline CSS and JavaScript.
+No markdown fences, no explanation. Make it polished, responsive, modern and premium-looking.`;
+const APP_SYSTEM = BUILD_SYSTEM + ` It must be a working app with real interactivity; keep data in memory (no localStorage).`;
+
+const TOOLS = [
+  { type: "function", function: { name: "make_website", description: "Build a premium single-file website and show a preview.",
+    parameters: { type: "object", properties: { request: { type: "string" } }, required: ["request"] } } },
+  { type: "function", function: { name: "make_app", description: "Build a single-file interactive web app and show a preview.",
+    parameters: { type: "object", properties: { request: { type: "string" } }, required: ["request"] } } },
+  { type: "function", function: { name: "make_image", description: "Generate an image from a prompt (needs an image endpoint in Settings).",
+    parameters: { type: "object", properties: { prompt: { type: "string" } }, required: ["prompt"] } } },
+  { type: "function", function: { name: "make_speech", description: "Turn text into spoken audio mp3 (needs a speech endpoint in Settings).",
+    parameters: { type: "object", properties: { text: { type: "string" } }, required: ["text"] } } },
+  { type: "function", function: { name: "save_memory", description: "Remember a durable fact about the user.",
+    parameters: { type: "object", properties: { fact: { type: "string" } }, required: ["fact"] } } }
+];
+
+// ---------- UI helpers ----------
+function scrollDown() { $("log").scrollTop = $("log").scrollHeight; }
+
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const old = btn.textContent; btn.textContent = "Copied";
+    setTimeout(() => btn.textContent = old, 1200);
+  }).catch(() => {});
+}
+
+function addMsg(text, cls) {
+  const d = document.createElement("div");
+  d.className = "msg " + cls;
+  d.textContent = text;
+  if (cls === "bot") {
+    const row = document.createElement("div"); row.className = "row";
+    const b = document.createElement("button"); b.className = "small ghost"; b.textContent = "Copy";
+    b.onclick = () => copyText(text, b);
+    row.appendChild(b); d.appendChild(row);
+  }
+  $("log").appendChild(d);
+  scrollDown();
+  return d;
+}
+
+function addError(text) {
+  const d = document.createElement("div");
+  d.className = "msg bot error";
+  d.textContent = "Error: " + text;
+  const row = document.createElement("div"); row.className = "row";
+  const b = document.createElement("button"); b.className = "small"; b.textContent = "Retry";
+  b.onclick = () => retry();
+  row.appendChild(b); d.appendChild(row);
+  $("log").appendChild(d);
+  scrollDown();
+}
+
+function addCard(node) {
+  const d = document.createElement("div");
+  d.className = "card";
+  d.appendChild(node);
+  $("log").appendChild(d);
+  scrollDown();
+}
+
+function caption(text) {
+  const p = document.createElement("div"); p.className = "cap"; p.textContent = text; return p;
+}
+
+function showTyping(on) {
+  let t = document.getElementById("typing");
+  if (on && !t) {
+    t = document.createElement("div"); t.id = "typing"; t.className = "typing";
+    t.innerHTML = "<i></i><i></i><i></i>";
+    $("log").appendChild(t); scrollDown();
+  } else if (!on && t) t.remove();
+}
+
+function setBusy(busy) {
+  $("send").style.display = busy ? "none" : "inline-block";
+  $("stop").classList.toggle("show", busy);
+  $("send").disabled = busy;
+}
+
+// ---------- Model calls ----------
+async function callNvidia(messages, system, tools = TOOLS) {
+  const key = $("k-nvidia").value.trim();
+  const model = $("m-nvidia").value.trim();
+  const endpoint = $("endpoint").value.trim();
+  if (!key) throw new Error("Add your Nvidia API key in Settings");
+  if (!model) throw new Error("Enter your Nvidia model ID in Settings");
+
+  const memoryNote = state.memory.length ? "\n\nKnown facts about the user:\n- " + state.memory.join("\n- ") : "";
+  state.abort = new AbortController();
+  let r;
+  try {
+    r = await fetch(endpoint, {
+      method: "POST", signal: state.abort.signal,
+      headers: { "content-type": "application/json", authorization: "Bearer " + key },
+      body: JSON.stringify({
+        model, max_tokens: 4096, temperature: parseFloat($("temp").value) || 0.7,
+        tools, messages: [{ role: "system", content: system + memoryNote }, ...messages]
+      })
+    });
+  } catch (e) {
+    if (e.name === "AbortError") throw e;
+    throw new Error("The browser blocked or could not reach the endpoint (" + e.message + "). " +
+      "Host this file on a web address or point Chat endpoint at a proxy.");
+  }
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error?.message || j.detail || `HTTP ${r.status}`);
+  return j.choices[0].message;
+}
+
+function cleanHtml(text) {
+  return (text || "").trim().replace(/^```(html)?\s*/i, "").replace(/```\s*$/, "").trim();
+}
+
+async function buildPage(request, kind) {
+  const msg = await callNvidia([{ role: "user", content: request }], kind === "app" ? APP_SYSTEM : BUILD_SYSTEM, []);
+  return cleanHtml(msg.content);
+}
+
+function showPage(html, kind) {
+  const name = kind === "app" ? "app.html" : "website.html";
+  const url = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+
+  const preview = document.createElement("iframe");
+  preview.setAttribute("sandbox", "allow-scripts allow-forms allow-modals");
+  preview.srcdoc = html;
+
+  const code = document.createElement("pre");
+  code.textContent = html; code.style.display = "none";
+
+  const tabs = document.createElement("div"); tabs.className = "tabs";
+  const tPrev = document.createElement("button"); tPrev.textContent = "Preview"; tPrev.className = "on";
+  const tCode = document.createElement("button"); tCode.textContent = "Code";
+  tCode.className = "ghost";
+  tPrev.onclick = () => { preview.style.display = "block"; code.style.display = "none"; tPrev.className = "on"; tCode.className = "ghost"; };
+  tCode.onclick = () => { preview.style.display = "none"; code.style.display = "block"; tCode.className = "on"; tPrev.className = "ghost"; };
+  tabs.append(tPrev, tCode);
+
+  const actions = document.createElement("div"); actions.className = "actions";
+  const dl = document.createElement("a"); dl.className = "dl"; dl.href = url; dl.download = name; dl.textContent = "Download " + name;
+  const open = document.createElement("button"); open.className = "small ghost"; open.textContent = "Open in new tab";
+  open.onclick = () => window.open(url, "_blank");
+  const cp = document.createElement("button"); cp.className = "small ghost"; cp.textContent = "Copy code";
+  cp.onclick = () => copyText(html, cp);
+  actions.append(dl, open, cp);
+
+  const box = document.createElement("div");
+  box.append(caption(kind === "app" ? "Web app" : "Website"), tabs, preview, code, actions);
+  addCard(box);
+}
+
+async function makeImage(prompt) {
+  const endpoint = $("img-endpoint").value.trim(), model = $("img-model").value.trim();
+  if (!endpoint || !model) throw new Error("Add an image endpoint and model ID in Settings");
+  const key = $("k-nvidia").value.trim();
+  const r = await fetch(endpoint, {
+    method: "POST", headers: { "content-type": "application/json", authorization: "Bearer " + key },
+    body: JSON.stringify({ model, prompt, size: "1024x1024" })
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error?.message || `Image request failed (HTTP ${r.status})`);
+  const item = j.data?.[0];
+  if (item?.b64_json) return "data:image/png;base64," + item.b64_json;
+  if (item?.url) return item.url;
+  throw new Error("No image in the response");
+}
+
+async function makeSpeech(text) {
+  const endpoint = $("tts-endpoint").value.trim(), model = $("tts-model").value.trim();
+  if (!endpoint || !model) throw new Error("Add a speech endpoint and model ID in Settings");
+  const key = $("k-nvidia").value.trim();
+  const r = await fetch(endpoint, {
+    method: "POST", headers: { "content-type": "application/json", authorization: "Bearer " + key },
+    body: JSON.stringify({ model, voice: "alloy", input: text })
+  });
+  if (!r.ok) throw new Error(`Speech request failed (HTTP ${r.status})`);
+  return URL.createObjectURL(await r.blob());
+}
+
+function showMedia(url, kind, filename) {
+  const box = document.createElement("div");
+  box.appendChild(caption(kind));
+  if (kind === "Image") { const img = document.createElement("img"); img.src = url; box.appendChild(img); }
+  else { const a = document.createElement("audio"); a.controls = true; a.src = url; box.appendChild(a); }
+  const actions = document.createElement("div"); actions.className = "actions";
+  const dl = document.createElement("a"); dl.className = "dl"; dl.href = url; dl.download = filename; dl.textContent = "Download " + filename;
+  actions.appendChild(dl); box.appendChild(actions);
+  addCard(box);
+}
+
+function paidOK(question) { return !$("confirm-paid").checked || confirm(question); }
+
+function renderMemory() {
+  const m = $("memory");
+  m.textContent = state.memory.length ? "Memory: " + state.memory.join("  •  ") : "";
+  m.classList.toggle("show", state.memory.length > 0);
+}
+
+async function runTool(name, input) {
+  switch (name) {
+    case "make_website":
+    case "make_app": {
+      const kind = name === "make_app" ? "app" : "website";
+      const html = await buildPage(input.request, kind);
+      showPage(html, kind);
+      return `${kind} built and shown to the user.`;
+    }
+    case "make_image": {
+      if (!paidOK(`Generate an image for "${input.prompt}"?`)) return "User declined.";
+      showMedia(await makeImage(input.prompt), "Image", "image.png");
+      return "Image generated and shown to the user.";
+    }
+    case "make_speech": {
+      if (!paidOK("Generate spoken audio?")) return "User declined.";
+      showMedia(await makeSpeech(input.text), "Narration", "narration.mp3");
+      return "Audio generated and shown to the user.";
+    }
+    case "save_memory":
+      state.memory.push(input.fact); renderMemory();
+      return "Saved to memory.";
+  }
+  return "Unknown tool.";
+}
+
+// ---------- Agent loop ----------
+async function runAgent(userText) {
+  state.msgs.push({ role: "user", content: userText });
+  for (let step = 0; step < MAX_STEPS; step++) {
+    showTyping(true);
+    let msg;
+    try { msg = await callNvidia(state.msgs, BASE_SYSTEM); }
+    finally { showTyping(false); }
+    state.msgs.push(msg);
+
+    if (!msg.tool_calls || !msg.tool_calls.length) {
+      addMsg(msg.content || "(done)", "bot");
+      return;
+    }
+    for (const tc of msg.tool_calls) {
+      let input = {};
+      try { input = JSON.parse(tc.function.arguments || "{}"); } catch (e) {}
+      addMsg(`→ ${tc.function.name} ${JSON.stringify(input)}`, "tool");
+      showTyping(true);
+      let out;
+      try { out = await runTool(tc.function.name, input); }
+      catch (e) { out = "Error: " + e.message; }
+      finally { showTyping(false); }
+      state.msgs.push({ role: "tool", tool_call_id: tc.id, content: String(out) });
+    }
+  }
+  addMsg(`Stopped after ${MAX_STEPS} steps. Send a follow-up to continue.`, "bot");
+}
+
+async function run(text) {
+  setBusy(true);
+  try { await runAgent(text); }
+  catch (e) {
+    showTyping(false);
+    if (e.name === "AbortError") addMsg("Stopped.", "bot");
+    else addError(e.message);
+  }
+  finally { state.abort = null; setBusy(false); $("input").focus(); }
+}
+
+function send() {
+  const text = $("input").value.trim();
+  if (!text || $("send").disabled) return;
+  $("input").value = "";
+  state.lastUser = text;
+  addMsg(text, "user");
+  run(text);
+}
+
+function retry() {
+  if (!state.lastUser) return;
+  // Drop the failed turn's messages after the last user message so the request is clean.
+  while (state.msgs.length && !(state.msgs[state.msgs.length - 1].role === "user" && typeof state.msgs[state.msgs.length - 1].content === "string")) state.msgs.pop();
+  if (state.msgs.length && state.msgs[state.msgs.length - 1].role === "user") state.msgs.pop();
+  addMsg("Retrying…", "bot");
+  run(state.lastUser);
+}
+
+// ---------- Events ----------
+$("send").onclick = send;
+$("stop").onclick = () => { if (state.abort) state.abort.abort(); };
+$("input").addEventListener("keydown", e => {
+  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); send(); }
+});
+$("btn-retry").onclick = retry;
+$("btn-settings").onclick = () => $("settings").classList.toggle("open");
+$("btn-memory").onclick = () => {
+  if (!state.memory.length) addMsg("No memory yet. Tell me something to remember and I'll save it.", "bot");
+  else $("memory").classList.toggle("show");
+};
+$("btn-export").onclick = () => {
+  const data = { exported: new Date().toISOString(), memory: state.memory, messages: state.msgs };
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+  const a = document.createElement("a"); a.href = url; a.download = "heeko-ai-export.json"; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+$("btn-clear").onclick = () => {
+  state.msgs = []; state.lastUser = "";
+  $("log").innerHTML = "";
+  addMsg("Chat cleared. Memory is kept.", "bot");
+};
+addMsg("Heeko Ai is ready. Add your Nvidia key in Settings, pick Website or Web app, then ask.", "bot");
+</script>
+</body>
+</html>
